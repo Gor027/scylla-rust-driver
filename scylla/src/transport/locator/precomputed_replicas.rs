@@ -28,7 +28,7 @@ type Replicas = Vec<Arc<Node>>;
 /// Takes care of precomputing all possible replica lists for given replication strategies.
 /// Uses `ReplicationInfo` to calculate the replica lists for all tokens present in the ring,
 /// and stores them for future use.
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub(crate) struct PrecomputedReplicas {
     /// Precomputed replicas for SimpleStrategy, kept in a ring for efficient access.
     global_replicas: PrecomputedReplicasRing,
@@ -38,7 +38,7 @@ pub(crate) struct PrecomputedReplicas {
 }
 
 /// Keeps a precomputed replica list for each token present in the ring.
-#[derive(Clone)]
+#[derive(Debug, Clone)]
 struct PrecomputedReplicasRing {
     /// Replica lists are kept in `TokenRing` to allow efficient access with a token as a key.
     replicas_for_token: TokenRing<Replicas>,
@@ -47,7 +47,7 @@ struct PrecomputedReplicasRing {
     max_rep_factor: usize,
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 struct DatacenterPrecomputedReplicas {
     /// Holds replica lists that were computed using `replication factor` <= `rack count`.
     /// Replica lists computed for `rf` = `n` are prefixes of replica lists computed for
