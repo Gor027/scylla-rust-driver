@@ -6,7 +6,7 @@ use crate::routing::Token;
 /// Each ring member has a token (i64 number) which defines the member's position on the ring.
 /// The ring is circular and can be traversed in the order of increasing tokens.
 /// `TokenRing` makes it easy and efficient to traverse the ring starting at a given token.
-#[derive(Clone)]
+#[derive(Debug, Clone)]
 pub struct TokenRing<ElemT> {
     ring: Vec<(Token, ElemT)>,
 }
