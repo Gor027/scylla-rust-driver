@@ -8,8 +8,8 @@ use std::cmp;
 use std::collections::{BTreeSet, HashMap};
 use std::sync::Arc;
 
-#[derive(Clone)]
 /// DatacenterNodes nodes holds a token ring in which all nodes belong to one datacenter.
+#[derive(Debug, Clone)]
 pub(crate) struct DatacenterNodes {
     dc_ring: TokenRing<Arc<Node>>,
     unique_nodes_in_dc_ring: Vec<Arc<Node>>,
@@ -34,9 +34,9 @@ impl DatacenterNodes {
     }
 }
 
-#[derive(Clone)]
 /// ReplicationInfo keeps information about the token ring
 /// and provides methods to calculate replica lists for SimpleStrategy and NetworkTopologyStrategy.
+#[derive(Debug, Clone)]
 pub(crate) struct ReplicationInfo {
     /// Global ring is used to calculate SimpleStrategy replicas.
     global_ring: TokenRing<Arc<Node>>,
