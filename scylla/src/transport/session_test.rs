@@ -57,7 +57,12 @@ async fn test_connection_failure() {
 #[tokio::test]
 async fn test_unprepared_statement() {
     let uri = std::env::var("SCYLLA_URI").unwrap_or_else(|_| "127.0.0.1:9042".to_string());
-    let session = SessionBuilder::new().known_node(uri).build().await.unwrap();
+    let session = SessionBuilder::new()
+        .known_node(uri)
+        .default_consistency(Consistency::All)
+        .build()
+        .await
+        .unwrap();
     let ks = unique_keyspace_name();
 
     session.query(format!("CREATE KEYSPACE IF NOT EXISTS {} WITH REPLICATION = {{'class' : 'SimpleStrategy', 'replication_factor' : 1}}", ks), &[]).await.unwrap();
@@ -1960,7 +1965,12 @@ async fn test_unusual_valuelists() {
     let _ = tracing_subscriber::fmt::try_init();
 
     let uri = std::env::var("SCYLLA_URI").unwrap_or_else(|_| "127.0.0.1:9042".to_string());
-    let session = SessionBuilder::new().known_node(uri).build().await.unwrap();
+    let session = SessionBuilder::new()
+        .known_node(uri)
+        .default_consistency(Consistency::All)
+        .build()
+        .await
+        .unwrap();
     let ks = unique_keyspace_name();
 
     session.query(format!("CREATE KEYSPACE IF NOT EXISTS {} WITH REPLICATION = {{'class' : 'SimpleStrategy', 'replication_factor' : 1}}", ks), &[]).await.unwrap();
@@ -2222,7 +2232,12 @@ async fn assert_test_batch_table_rows_contain(sess: &Session, expected_rows: &[(
 #[tokio::test]
 async fn test_prepare_batch() {
     let uri = std::env::var("SCYLLA_URI").unwrap_or_else(|_| "127.0.0.1:9042".to_string());
-    let session = SessionBuilder::new().known_node(uri).build().await.unwrap();
+    let session = SessionBuilder::new()
+        .known_node(uri)
+        .default_consistency(Consistency::All)
+        .build()
+        .await
+        .unwrap();
 
     let ks = unique_keyspace_name();
     session.query(format!("CREATE KEYSPACE IF NOT EXISTS {} WITH REPLICATION = {{'class' : 'SimpleStrategy', 'replication_factor' : 1}}", ks), &[]).await.unwrap();

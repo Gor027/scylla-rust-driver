@@ -12,6 +12,7 @@ use crate::SessionBuilder;
 use bigdecimal::BigDecimal;
 use chrono::{Duration, NaiveDate};
 use num_bigint::BigInt;
+use scylla_cql::Consistency;
 use std::cmp::PartialEq;
 use std::env;
 use std::fmt::Debug;
@@ -26,7 +27,12 @@ async fn init_test(table_name: &str, type_name: &str) -> Session {
     let uri = env::var("SCYLLA_URI").unwrap_or_else(|_| "127.0.0.1:9042".to_string());
 
     println!("Connecting to {} ...", uri);
-    let session: Session = SessionBuilder::new().known_node(uri).build().await.unwrap();
+    let session: Session = SessionBuilder::new()
+        .known_node(uri)
+        .default_consistency(Consistency::All)
+        .build()
+        .await
+        .unwrap();
     let ks = unique_keyspace_name();
 
     session
