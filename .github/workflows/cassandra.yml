@@ -24,5 +24,15 @@ jobs:
     - name: Run tests on cassandra
       run: |
         CDC='disabled' SCYLLA_URI=172.42.0.2:9042 SCYLLA_URI2=172.42.0.3:9042 SCYLLA_URI3=172.42.0.4:9042 cargo test --verbose -- --skip test_views_in_schema_info
+    - name: Export cluster logs
+      if: always()
+      run: |
+        docker-compose -f test/cluster/cassandra/docker-compose.yml logs --no-color >& logs.txt
+    - name: Upload Cassandra logs
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: logs
+        path: "logs.txt"
     - name: Stop cluster
       run: docker-compose -f test/cluster/cassandra/docker-compose.yml down
