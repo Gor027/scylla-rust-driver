@@ -28,6 +28,7 @@ async fn create_table(session: &Session, table_name: &str, value_type: &str) {
         )
         .await
         .unwrap();
+    session.await_schema_agreement().await.unwrap();
 }
 
 async fn insert_and_select<InsertT, SelectT>(
