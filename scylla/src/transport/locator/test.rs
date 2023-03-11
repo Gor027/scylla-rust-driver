@@ -255,6 +255,7 @@ fn test_simple_strategy_replicas(locator: &ReplicaLocator) {
                 replication_factor: 3,
             },
             None,
+            None,
         ),
         &[F, G, D],
     );
@@ -265,6 +266,7 @@ fn test_simple_strategy_replicas(locator: &ReplicaLocator) {
             &Strategy::SimpleStrategy {
                 replication_factor: 4,
             },
+            None,
             None,
         ),
         &[F, G, D, B],
@@ -277,6 +279,7 @@ fn test_simple_strategy_replicas(locator: &ReplicaLocator) {
                 replication_factor: 4,
             },
             None,
+            None,
         ),
         &[A, C, D, F],
     );
@@ -287,6 +290,7 @@ fn test_simple_strategy_replicas(locator: &ReplicaLocator) {
             &Strategy::SimpleStrategy {
                 replication_factor: 0,
             },
+            None,
             None,
         ),
         &[],
@@ -301,6 +305,7 @@ fn test_simple_strategy_replicas(locator: &ReplicaLocator) {
                 replication_factor: 1,
             },
             Some("us"),
+            None,
         ),
         &[],
     );
@@ -312,6 +317,7 @@ fn test_simple_strategy_replicas(locator: &ReplicaLocator) {
                 replication_factor: 3,
             },
             Some("us"),
+            None,
         ),
         &[E],
     );
@@ -323,6 +329,7 @@ fn test_simple_strategy_replicas(locator: &ReplicaLocator) {
                 replication_factor: 3,
             },
             Some("eu"),
+            None,
         ),
         &[A, B],
     );
@@ -338,6 +345,7 @@ fn test_network_topology_strategy_replicas(locator: &ReplicaLocator) {
                     .collect(),
             },
             Some("eu"),
+            None,
         ),
         &[B],
     );
@@ -351,6 +359,7 @@ fn test_network_topology_strategy_replicas(locator: &ReplicaLocator) {
                     .collect(),
             },
             Some("us"),
+            None,
         ),
         &[E],
     );
@@ -364,6 +373,7 @@ fn test_network_topology_strategy_replicas(locator: &ReplicaLocator) {
                     .collect(),
             },
             None,
+            None,
         ),
         &[B, E],
     );
@@ -376,6 +386,7 @@ fn test_network_topology_strategy_replicas(locator: &ReplicaLocator) {
                     .into_iter()
                     .collect(),
             },
+            None,
             None,
         ),
         // Walking the ring from token 75, [B E F A C D A F G] is encountered.
@@ -393,6 +404,7 @@ fn test_network_topology_strategy_replicas(locator: &ReplicaLocator) {
                     .collect(),
             },
             None,
+            None,
         ),
         &[E],
     );
@@ -405,6 +417,7 @@ fn test_network_topology_strategy_replicas(locator: &ReplicaLocator) {
                     .into_iter()
                     .collect(),
             },
+            None,
             None,
         ),
         &[G, E],
@@ -421,6 +434,7 @@ fn test_replica_set_len(locator: &ReplicaLocator) {
                     .collect(),
             },
             None,
+            None,
         )
         .len();
     assert_eq!(merged_nts_len, 3);
@@ -436,6 +450,7 @@ fn test_replica_set_len(locator: &ReplicaLocator) {
                     .collect(),
             },
             None,
+            None,
         )
         .len();
     assert_eq!(capped_merged_nts_len, 5); // 5 = all eu nodes + 1 us node = 4 + 1.
@@ -449,6 +464,7 @@ fn test_replica_set_len(locator: &ReplicaLocator) {
                     .collect(),
             },
             Some("eu"),
+            None,
         )
         .len();
     assert_eq!(filtered_nts_len, 2);
@@ -459,6 +475,7 @@ fn test_replica_set_len(locator: &ReplicaLocator) {
             &Strategy::SimpleStrategy {
                 replication_factor: 3,
             },
+            None,
             None,
         )
         .len();
@@ -472,6 +489,7 @@ fn test_replica_set_len(locator: &ReplicaLocator) {
                 replication_factor: 3,
             },
             Some("eu"),
+            None,
         )
         .len();
     assert_eq!(filtered_ss_len, 1)
@@ -493,7 +511,7 @@ fn test_replica_set_choose(locator: &ReplicaLocator) {
 
     for strategy in strategies {
         let replica_set_generator =
-            || locator.replicas_for_token(Token { value: 75 }, &strategy, None);
+            || locator.replicas_for_token(Token { value: 75 }, &strategy, None, None);
 
         // Verify that after a certain number of random selections, the set of selected replicas
         // will contain all nodes in the ring (replica set was created usin a strategy with
@@ -534,7 +552,7 @@ fn test_replica_set_choose_filtered(locator: &ReplicaLocator) {
 
     for strategy in strategies {
         let replica_set_generator =
-            || locator.replicas_for_token(Token { value: 75 }, &strategy, None);
+            || locator.replicas_for_token(Token { value: 75 }, &strategy, None, None);
 
         // Verify that after a certain number of random selections with a dc filter, the set of
         // selected replicas will contain all nodes in the specified dc ring.
@@ -564,6 +582,7 @@ fn test_replica_set_choose_filtered(locator: &ReplicaLocator) {
             Token { value: 75 },
             &Strategy::LocalStrategy,
             Some("unknown_dc_name"),
+            None,
         )
         .choose_filtered(&mut rng, |_| true);
     assert_eq!(empty, None);

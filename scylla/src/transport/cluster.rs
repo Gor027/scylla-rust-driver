@@ -443,7 +443,7 @@ impl ClusterData {
             .unwrap_or(&Strategy::LocalStrategy);
         let replica_set = self
             .replica_locator()
-            .replicas_for_token(token, strategy, None);
+            .replicas_for_token(token, strategy, None, None);
 
         replica_set.into_iter().cloned().collect()
     }

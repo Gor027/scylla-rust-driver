@@ -74,6 +74,7 @@ impl ReplicaLocator {
         token: Token,
         strategy: &'a Strategy,
         datacenter: Option<&'a str>,
+        rack: Option<&'a str>,
     ) -> ReplicaSet<'a> {
         match strategy {
             Strategy::SimpleStrategy { replication_factor } => {
@@ -127,6 +128,7 @@ impl ReplicaLocator {
                 replication_factor: 1,
             },
             datacenter,
+            rack,
         )
     }
 
