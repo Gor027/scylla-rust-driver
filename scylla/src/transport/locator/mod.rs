@@ -84,6 +84,7 @@ impl ReplicaLocator {
                     return ReplicaSetInner::FilteredSimple {
                         replicas,
                         datacenter,
+                        rack,
                     }
                     .into();
                 } else {
@@ -216,6 +217,7 @@ enum ReplicaSetInner<'a> {
     FilteredSimple {
         replicas: ReplicasArray<'a>,
         datacenter: &'a str,
+        rack: Option<&'a str>,
     },
 
     // Represents a set of NetworkTopologyStrategy replicas that is not limited to any specific
@@ -273,9 +275,17 @@ impl<'a> ReplicaSet<'a> {
             ReplicaSetInner::FilteredSimple {
                 replicas,
                 datacenter,
+                rack,
             } => replicas
                 .iter()
                 .filter(|node| node.datacenter.as_deref() == Some(datacenter))
+                .filter(|node| {
+                    if rack.is_some() {
+                        node.rack.as_deref() == *rack
+                    } else {
+                        true
+                    }
+                })
                 .count(),
             ReplicaSetInner::ChainedNTS {
                 datacenter_repfactors,
@@ -315,9 +325,17 @@ impl<'a> ReplicaSet<'a> {
                 ReplicaSetInner::FilteredSimple {
                     replicas,
                     datacenter,
+                    rack,
                 } => replicas
                     .iter()
                     .filter(|node| node.datacenter.as_deref() == Some(datacenter))
+                    .filter(|node| {
+                        if rack.is_some() {
+                            node.rack.as_deref() == *rack
+                        } else {
+                            true
+                        }
+                    })
                     .nth(index),
                 ReplicaSetInner::ChainedNTS {
                     datacenter_repfactors,
@@ -368,9 +386,11 @@ impl<'a> IntoIterator for ReplicaSet<'a> {
             ReplicaSetInner::FilteredSimple {
                 replicas,
                 datacenter,
+                rack,
             } => ReplicaSetIteratorInner::FilteredSimple {
                 replicas,
                 datacenter,
+                rack,
                 idx: 0,
             },
             ReplicaSetInner::ChainedNTS {
@@ -428,6 +448,7 @@ enum ReplicaSetIteratorInner<'a> {
     FilteredSimple {
         replicas: ReplicasArray<'a>,
         datacenter: &'a str,
+        rack: Option<&'a str>,
         idx: usize,
     },
     ChainedNTS {
@@ -462,12 +483,19 @@ impl<'a> Iterator for ReplicaSetIterator<'a> {
             ReplicaSetIteratorInner::FilteredSimple {
                 replicas,
                 datacenter,
+                rack,
                 idx,
             } => {
                 while let Some(replica) = replicas.get(*idx) {
                     *idx += 1;
                     if replica.datacenter.as_deref() == Some(datacenter) {
-                        return Some(replica);
+                        if let Some(rack) = rack {
+                            if replica.rack.as_deref() == Some(rack) {
+                                return Some(replica);
+                            }
+                        } else {
+                            return Some(replica);
+                        }
                     }
                 }
 
@@ -511,6 +539,7 @@ impl<'a> Iterator for ReplicaSetIterator<'a> {
             ReplicaSetIteratorInner::FilteredSimple {
                 replicas,
                 datacenter: _,
+                rack: _,
                 idx,
             } => (0, Some(replicas.len() - *idx)),
             ReplicaSetIteratorInner::ChainedNTS {
