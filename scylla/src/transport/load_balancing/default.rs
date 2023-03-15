@@ -988,6 +988,54 @@ mod tests {
                     .group([B, C, E]) // remote nodes
                     .build(),
             },
+            // Keyspace SS with RF=2 with DC failover forbidden by local Consistency and local rack
+            Test {
+                policy: DefaultPolicy {
+                    preferred_datacenter: Some("us".to_owned()),
+                    preferred_rack: Some("r2".to_owned()),
+                    is_token_aware: true,
+                    permit_dc_failover: true,
+                    ..Default::default()
+                },
+                routing_info: RoutingInfo {
+                    token: Some(Token { value: 160 }),
+                    keyspace: Some(KEYSPACE_SS_RF_2),
+                    consistency: Consistency::LocalOne, // local Consistency forbids datacenter failover
+                    ..Default::default()
+                },
+                // going though the ring, we get order: F , A , C , D , G , B , E
+                //                                      us  eu  eu  us  eu  eu  us
+                //                                      r2  r1  r1  r1  r2  r1  r1
+                expected_groups: ExpectedGroupsBuilder::new()
+                    .group([F]) // pick local replicas
+                    .group([D, E]) // local nodes
+                    .build(), // failover is forbidden by local Consistency
+            },
+            // Keyspace SS with RF=2 with enabled DC failover and local rack
+            Test {
+                policy: DefaultPolicy {
+                    preferred_datacenter: Some("us".to_owned()),
+                    preferred_rack: Some("r2".to_owned()),
+                    is_token_aware: true,
+                    permit_dc_failover: true,
+                    ..Default::default()
+                },
+                routing_info: RoutingInfo {
+                    token: Some(Token { value: 160 }),
+                    keyspace: Some(KEYSPACE_SS_RF_2),
+                    consistency: Consistency::Two,
+                    ..Default::default()
+                },
+                // going though the ring, we get order: F , A , C , D , G , B , E
+                //                                      us  eu  eu  us  eu  eu  us
+                //                                      r2  r1  r1  r1  r2  r1  r1
+                expected_groups: ExpectedGroupsBuilder::new()
+                    .group([F]) // pick + fallback local replicas
+                    .group([A]) // remote replicas
+                    .group([D, E]) // local nodes
+                    .group([C, G, B]) // remote nodes
+                    .build(),
+            },
         ];
 
         for Test {
